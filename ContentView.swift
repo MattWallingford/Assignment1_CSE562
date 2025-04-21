@@ -1,3 +1,10 @@
+//
+//  ContentView.swift
+//  Assignment1_v2
+//
+//  Created by Matthew Wallingford on 4/19/25.
+//
+
 import SwiftUI
 import CoreMotion
 import UIKit
@@ -16,7 +23,6 @@ struct ViewControllerWrapper: UIViewControllerRepresentable {
 
     func updateUIViewController(_ uiViewController: ViewController, context: Context) {}
 }
-
 struct ContentView: View {
     @StateObject var chartModel = OrientationChartModel()
 
@@ -24,76 +30,9 @@ struct ContentView: View {
         VStack {
             ViewControllerWrapper(chartModel: chartModel)
                 .edgesIgnoringSafeArea(.all)
-
             LiveComplementaryChartView(chartModel: chartModel)
         }
     }
-}
-
-class OrientationChartModel: ObservableObject {
-    @Published var data: [OrientationPoint] = []
-    private var timeCounter = 0.0
-    let updateInterval = 1.0 / 50.0
-
-    func append(roll: Double, pitch: Double, yaw: Double) {
-        data.append(OrientationPoint(time: timeCounter, roll: roll, pitch: pitch, yaw: yaw))
-        timeCounter += updateInterval
-
-        // Optional: keep only the most recent 500 points
-        if data.count > 1000 {
-            data.removeFirst()
-        }
-    }
-}
-
-struct LiveComplementaryChartView: View {
-    @ObservedObject var chartModel: OrientationChartModel
-
-    var body: some View {
-        VStack(spacing: 24) {
-            Text("Complementary Filter Output")
-                .font(.title)
-                .padding(.top)
-
-            Chart(chartModel.data) {
-                LineMark(x: .value("Time", $0.time), y: .value("Roll", $0.roll))
-            }
-            .frame(height: 250)
-            .chartXAxisLabel("Time (s)")
-            .chartYAxisLabel("Roll (°)")
-            .chartYScale(domain: -180...180)
-            .padding(.horizontal)
-
-            Chart(chartModel.data) {
-                LineMark(x: .value("Time", $0.time), y: .value("Pitch", $0.pitch))
-            }
-            .frame(height: 250)
-            .chartXAxisLabel("Time (s)")
-            .chartYAxisLabel("Pitch (°)")
-            .chartYScale(domain: -180...180)
-            .padding(.horizontal)
-
-            Chart(chartModel.data) {
-                LineMark(x: .value("Time", $0.time), y: .value("Yaw", $0.yaw))
-            }
-            .frame(height: 250)
-            .chartXAxisLabel("Time (s)")
-            .chartYAxisLabel("Yaw (°)")
-            .chartYScale(domain: -180...180)
-            .padding(.horizontal)
-        }
-        .background(Color(UIColor.systemBackground))
-    }
-}
-
-
-
-struct OrientationPoint: Identifiable {
-    let id = UUID()
-    let time: Double
-    let roll: Double
-    let pitch: Double
-    let yaw: Double
 }
 
 class ViewController: UIViewController {
@@ -144,7 +83,6 @@ class ViewController: UIViewController {
         view.addSubview(saveButton)
     }
     
-    
     func startAccelAndGyro() {
         if (self.motion.isAccelerometerAvailable && self.motion.isGyroAvailable){
             self.motion.startAccelerometerUpdates()
@@ -153,7 +91,6 @@ class ViewController: UIViewController {
             self.motion.gyroUpdateInterval = updateInterval
         }
     }
-    
     
     func fetchAcceleratorData(){
         timer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] _ in
@@ -164,7 +101,6 @@ class ViewController: UIViewController {
                 self?.accelLabel.text = String(format: "IMU\nx: %.3f\ny: %.3f\nz: %.3f", x, y, z)
             }
         }
-        
     }
     
     func fetchGyroData(){
@@ -175,7 +111,6 @@ class ViewController: UIViewController {
                 let z = data.rotationRate.z
                 
                 self?.gyroLabel.text = String(format: "gyro\nx: %.3f\ny: %.3f\nz: %.3f", x, y, z)
-                
             }
         }
     }
@@ -192,10 +127,8 @@ class ViewController: UIViewController {
                 let a_x = accelData.acceleration.x
                 let a_y = accelData.acceleration.y
                 let a_z = accelData.acceleration.z
-
                 let accel_roll = atan2(a_y, a_z)
                 let accel_pitch = -atan2(-a_x, sqrt(a_y * a_y + a_z * a_z))
-
                 complementary_x = accel_roll
                 complementary_y = accel_pitch
                 complementary_z = 0.0
@@ -266,7 +199,68 @@ class ViewController: UIViewController {
         }
     }
 }
+class OrientationChartModel: ObservableObject {
+    @Published var data: [OrientationPoint] = []
+    private var timeCounter = 0.0
+    let updateInterval = 1.0 / 50.0
 
+    func append(roll: Double, pitch: Double, yaw: Double) {
+        data.append(OrientationPoint(time: timeCounter, roll: roll, pitch: pitch, yaw: yaw))
+        timeCounter += updateInterval
+
+        // Optional: keep only the most recent 500 points
+        if data.count > 1000 {
+            data.removeFirst()
+        }
+    }
+}
+
+struct LiveComplementaryChartView: View {
+    @ObservedObject var chartModel: OrientationChartModel
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Text("Complementary Filter Output")
+                .font(.title)
+                .padding(.top)
+            Chart(chartModel.data) {
+                LineMark(x: .value("Time", $0.time), y: .value("Roll", $0.roll))
+            }
+            .frame(height: 250)
+            .chartXAxisLabel("Time (s)")
+            .chartYAxisLabel("Roll (°)")
+            .chartYScale(domain: -180...180)
+            .padding(.horizontal)
+
+            Chart(chartModel.data) {
+                LineMark(x: .value("Time", $0.time), y: .value("Pitch", $0.pitch))
+            }
+            .frame(height: 250)
+            .chartXAxisLabel("Time (s)")
+            .chartYAxisLabel("Pitch (°)")
+            .chartYScale(domain: -180...180)
+            .padding(.horizontal)
+
+            Chart(chartModel.data) {
+                LineMark(x: .value("Time", $0.time), y: .value("Yaw", $0.yaw))
+            }
+            .frame(height: 250)
+            .chartXAxisLabel("Time (s)")
+            .chartYAxisLabel("Yaw (°)")
+            .chartYScale(domain: -180...180)
+            .padding(.horizontal)
+        }
+        .background(Color(UIColor.systemBackground))
+    }
+}
+
+struct OrientationPoint: Identifiable {
+    let id = UUID()
+    let time: Double
+    let roll: Double
+    let pitch: Double
+    let yaw: Double
+}
 
 
 #Preview {
