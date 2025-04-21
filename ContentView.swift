@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  Assignment1_v2
-//
-//  Created by Matthew Wallingford on 4/19/25.
-//
-
 import SwiftUI
 import CoreMotion
 import UIKit
