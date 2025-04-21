@@ -128,7 +128,7 @@ class ViewController: UIViewController {
                 let a_y = accelData.acceleration.y
                 let a_z = accelData.acceleration.z
                 let accel_roll = atan2(a_y, a_z)
-                let accel_pitch = -atan2(-a_x, sqrt(a_y * a_y + a_z * a_z))
+                let accel_pitch = atan2(-a_x, sqrt(a_y * a_y + a_z * a_z))
                 complementary_x = accel_roll
                 complementary_y = accel_pitch
                 complementary_z = 0.0
@@ -177,8 +177,6 @@ class ViewController: UIViewController {
             self.csvText.append(row)
         }
     }
-
-    
     @objc func stopAndSaveTapped(){
         saveCSVFile()
     }
